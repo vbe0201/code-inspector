@@ -109,3 +109,6 @@ config.yaml
 
 # pipenv stuff
 Pipfile*
+
+# Log files
+logs/*
