@@ -1,0 +1,21 @@
+# The bot token
+token: 'Token'
+# The prefix of the bot
+prefix: 'cc!'
+# A brief description about the bot.
+description: "Hello! My name is Code Inspector and I'm here to help you with your code!"
+# A Webhook URL to send command errors to.
+webhook_url: ""
+
+pg_credentials:
+  host: 127.0.0.1
+  port: 5432
+  user: 'your_username'
+  database: 'code_inspector'
+  password: 'super secret password'
+  timeout: 60
+
+# IDs of users that should have access to the commands of the owner cogs
+owners:
+  - 12345
+  - 23456
