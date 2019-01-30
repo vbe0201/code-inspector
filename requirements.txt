@@ -24,6 +24,7 @@ python-dateutil
 uvloop
 
 # Some useful general utilities a few commands require.
+import_expression<1.0.0,>=0.3.7
 more-itertools
 lxml
 pillow
