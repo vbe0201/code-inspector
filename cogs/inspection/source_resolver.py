@@ -31,6 +31,9 @@ class SourceResolver:
     def __contains__(self, item):
         return resolve_line(item, self.source)
 
+    def __getitem__(self, item):
+        return self.source[item]
+
     @staticmethod
     def resolve_source_object(file: Path):
         """Given a PosixPath object, this returns an object

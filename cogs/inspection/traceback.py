@@ -117,11 +117,19 @@ class TracebackInspection:
         if not matches:
             return
 
-        # the source line that caused the issue
+        path = matches[-1].group(1).strip()
         line = matches[-1].group(3).strip()
 
+        match = re.search(r"[\\/]([^\\/]*)[\\/]([^\\/]*)\.py", path)
+        if not match:
+            return
+
+        is_discord_py_issue = match.group(1).strip() in ('discord', 'commands')
+        if not is_discord_py_issue:
+            return
+
         # when the line isn't part of the rewrite branch code lines, it must (obviously) be async
-        is_async = line not in self.source_resolver
+        is_async = line not in self.source_resolver[match.group(2).strip()]
         if is_async:
             embed = (discord.Embed(description='Please consider updating your installation to the rewrite branch (v1.0.0).', color=0xe74c3c)
                      .set_author(name='Uh oh. Seems like you\'re using a deprecated version of discord.py!', icon_url=_EXCLAMATION_ICON)
