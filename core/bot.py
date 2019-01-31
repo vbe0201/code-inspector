@@ -198,11 +198,11 @@ class CodeInspector(commands.Bot):
         logger.info(f'\n================\nLogged in as:\n{self.user.name}\n{self.user.id}\n================\n')
         self.db_scheduler.run()
 
-        if not hasattr(self, 'app_info'):
+        if self.app_info is None:
             self.app_info = await self.application_info()
 
-        if not hasattr(self, 'creator'):
-            self.creator = await self.get_user_info(self.app_info.owner)
+        if self.creator is None:
+            self.creator = await self.get_user_info(self.app_info.owner.id)
 
         if not hasattr(self, 'start_time'):
             self.start_time = datetime.utcnow()

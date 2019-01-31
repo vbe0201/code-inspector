@@ -5,7 +5,7 @@ import re
 
 from discord.ext import commands
 
-__all__ = ['CodeblockConverter']
+__all__ = ['CodeblockConverter', 'Guild', 'MessageConverter']
 
 Codeblock = collections.namedtuple('Codeblock', 'language content')
 CODEBLOCK_REGEX = re.compile("^(?:```([A-Za-z0-9\\-.]*)\n)?(.+?)(?:```)?$", re.S)
@@ -60,17 +60,18 @@ class Guild(commands.Converter):
 class MessageConverter(commands.Converter):
     async def convert(self, ctx, argument):
         if isinstance(argument, str):
-            match = re.match(r"^(?:https?://)?(:?canary|ptb.)?discordapp.com/channels/([0-9]+)/([0-9]+)/([0-9+]+)$", argument, re.IGNORECASE)
+            match = re.match(r"(?:https?://)?(:?canary|ptb.)?discordapp.com/channels/([0-9]+)/([0-9]+)/([0-9+]+)", argument, re.IGNORECASE)
             if match:
-                message = await ctx.bot.get_channel(int(match.group(2))).get_message(int(match.group(3)))
+                message = (await ctx.bot.get_channel(int(match.group(2))).get_message(int(match.group(3)))).content
             else:
-                message = (await CodeblockConverter().convert(ctx, argument))
+                message = argument
         elif isinstance(argument, int):
-            message = await ctx.channel.get_message(argument)
+            message = (await ctx.channel.get_message(argument)).content
         else:
             message = None
 
         if message is None:
             raise commands.BadArgument('Couldn\'t find any matching message.')
 
-        return message.content
+        print(message)
+        return (await CodeblockConverter().convert(ctx, message)).content
