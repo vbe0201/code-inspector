@@ -120,6 +120,7 @@ class TracebackInspection:
         # the source line that caused the issue
         line = matches[-1].group(3).strip()
 
+        # when the line isn't part of the rewrite branch code lines, it must (obviously) be async
         is_async = line not in self.source_resolver
         if is_async:
             embed = (discord.Embed(description='Please consider updating your installation to the rewrite branch (v1.0.0).', color=0xe74c3c)
