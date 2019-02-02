@@ -1,0 +1,3 @@
+update: all
+schedule: "every day"
+label_prs: dependency update
