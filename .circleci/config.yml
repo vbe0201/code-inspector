@@ -36,6 +36,7 @@ jobs:
           command: |
             . venv/bin/activate
             pylama .
+            cp config.example.yaml config.yaml
             python launch.py --stream-log
 
       - save_cache:

@@ -13,16 +13,23 @@ matrix:
       dist: xenial
       sudo: true
 
+services:
+  - postgresql
+
 addons:
-  postgresql: "11"
+  postgresql: "9.6"
 
 install:
   - pip install -U pylama
   - pip install -U -r requirements.txt
 
 before_script:
-  - psql -c "CREATE ROLE ci SUPERUSER;"
-  - psql -c "CREATE DATABASE code_inspector OWNER ci;"
+  # The config file won't actually be used during CI builds,
+  # but we have to prevent launch.py from throwing an error
+  # due to a missing config.yaml file.
+  - cp config.example.yaml config.yaml
+  - psql -c "CREATE ROLE ci WITH LOGIN SUPERUSER;" -U postgres
+  - psql -c "CREATE DATABASE code_inspector OWNER ci;" -U postgres
 
 script:
   - pylama .
