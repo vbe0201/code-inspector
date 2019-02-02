@@ -39,45 +39,46 @@ class MetaCog(type):
 
     def __call__(cls, *args, **kwargs):
         self = super().__call__(*args, **kwargs)
-
         if not isinstance(args[0], commands.bot.BotBase):
             raise TypeError('The first parameter of a cog is supposed to be an instance of commands.Bot.')
 
         bot = args[0]
         bot.cogs[type(self).__name__] = self
-
         bot.categories[self.category].append(self)
 
-        try:
-            check = getattr(self, f'_{self.__class__.__name__}__global_check')
-        except AttributeError:
-            pass
-        else:
-            bot.add_check(check)
-
-        try:
-            check = getattr(self, f'_{self.__class__.__name__}__global_check_once')
-        except AttributeError:
-            pass
-        else:
-            bot.add_check(check, call_once=True)
+        # add the checks, commands and event listeners to the bot
+        cls._add_check(self, bot, 'global_check')
+        cls._add_check(self, bot, 'global_check_once', call_once=True)
 
         for name, member in inspect.getmembers(self):
             if isinstance(member, commands.Command):
                 if member.parent:
                     continue
 
-                if self.secret:
-                    member.hidden = True
-
-                bot.add_command(member)
-                self.commands.append(member)
+                cls._add_command(self, bot, member)
 
             elif name.startswith('on_'):
                 bot.add_listener(member, name)
                 self.events.append(name)
 
         return self
+
+    @staticmethod
+    def _add_check(self, bot: commands.Bot, name: str, call_once: bool = False):
+        try:
+            check = getattr(self, f'_{self.__class__.__name__}__{name}')
+        except AttributeError:
+            pass
+        else:
+            bot.add_check(check, call_once=call_once)
+
+    @staticmethod
+    def _add_command(self, bot: commands.Bot, command: commands.Command):
+        if self.secret:
+            command.hidden = True
+
+        bot.add_command(command)
+        self.commands.append(command)
 
 
 class _ContextAcquire:

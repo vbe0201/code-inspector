@@ -252,9 +252,27 @@ class FilePaginator(commands.Paginator):
             pass
 
         raw_content = fp.read()
+        self.lines = self._get_lines(raw_content)
+        del raw_content
 
+        first_line = self.lines[0]
+        # If the first line is a shebang,
+        if first_line.startswith('#!'):
+            # prioritize its declaration over the extension.
+            language = get_language(first_line) or language
+
+        super().__init__(prefix=f'```{language}', suffix='```', **kwargs)
+
+        line_number = len(self.lines)
+        if line_span:
+            self.lines = self._get_line_span(line_span, line_number)
+
+        for line in self.lines:
+            self.add_line(line)
+
+    def _get_lines(self, raw_content):
         try:
-            lines = raw_content.decode('utf-8').split('\n')
+            return raw_content.decode('utf-8').split('\n')
         except UnicodeDecodeError as error:
             # The file isn't utf-8.
             # Ideally speaking, garbage.
@@ -267,28 +285,13 @@ class FilePaginator(commands.Paginator):
                 raise error
 
             try:
-                lines = raw_content.decode(encoding.decode('utf-8')).split('\n')
+                return raw_content.decode(encoding.decode('utf-8')).split('\n')
             except UnicodeDecodeError as error2:
                 raise error2 from error
 
-        del raw_content
+    def _get_line_span(self, line_span, line_number):
+        line_span = sorted(line_span)
+        if min(line_span) < 1 or max(line_span) > line_number:
+            raise ValueError('Linespan goes out of bounds.')
 
-        first_line = lines[0]
-
-        # If the first line is a shebang,
-        if first_line.startswith('#!'):
-            # prioritize its declaration over the extension.
-            language = get_language(first_line) or language
-
-        super().__init__(prefix=f'```{language}', suffix='```', **kwargs)
-
-        line_number = len(lines)
-
-        if line_span:
-            line_span = sorted(line_span)
-            if min(line_span) < 1 or max(line_span) > line_number:
-                raise ValueError('Linespan goes out of bounds.')
-            lines = lines[line_span[0] - 1:line_span[1]]
-
-        for line in lines:
-            self.add_line(line)
+        return self.lines[line_span[0] - 1:line_span[1]]

@@ -24,11 +24,11 @@ _short_time_pattern = re.compile("""
 
 
 DURATION_MULTIPLIERS = {
-    'years'  : 60 * 60 * 24 * 365,
-    'months' : 60 * 60 * 24 * 30,
-    'weeks'  : 60 * 60 * 24 * 7,
-    'days'   : 60 * 60 * 24,
-    'hours'  : 60 * 60,
+    'years': 60 * 60 * 24 * 365,
+    'months': 60 * 60 * 24 * 30,
+    'weeks': 60 * 60 * 24 * 7,
+    'days': 60 * 60 * 24,
+    'hours': 60 * 60,
     'minutes': 60,
     'seconds': 1,
 }

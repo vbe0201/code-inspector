@@ -18,9 +18,9 @@ async def _repl_coroutine({{0}}):
     import aiohttp
     import discord
     from discord.ext import commands
-    
+
     import utils
-    
+
     try:
         pass
 {{1}}
