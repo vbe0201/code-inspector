@@ -3,6 +3,7 @@
 import collections
 import re
 
+import discord
 from discord.ext import commands
 
 __all__ = ['CodeblockConverter', 'Guild', 'MessageConverter']
@@ -27,51 +28,37 @@ class CodeblockConverter(commands.Converter):
         return Codeblock(match.group(1), match.group(2))
 
 
-class Guild(commands.Converter):
+class Guild(commands.IDConverter):
     """
     A converter that matches guilds.
     """
 
     async def convert(self, ctx, argument):
-        guild = self._get_guild(ctx, argument)
-        if guild is None:
-            raise commands.BadArgument('Could not find any matching guild.')
+        id_ = self._get_id_match(argument)
+        if id_:
+            result = ctx.bot.get_guild(int(id_.group(1)))
         else:
-            return guild
+            result = discord.utils.find(lambda g: g.name == argument, ctx.bot.guilds)
 
-    @staticmethod
-    def _get_guild(ctx, argument):
-        if isinstance(argument, int):
-            guild = ctx.bot.get_guild(argument)
-        elif isinstance(argument, str):
-            guilds = list(filter(lambda g: g.name == argument, ctx._state._guilds.values()))
-            if len(guilds) > 1:
-                raise commands.BadArgument('Found multiple guilds with the same name.')
-            elif len(guilds) == 1:
-                guild = guilds[0]
-            else:
-                guild = None
-        else:
-            raise commands.BadArgument(f'Cannot determine guilds given this argument: {argument}')
+        if not result:
+            raise commands.BadArgument('Couldn\'t find a guild that matches {}'.format(argument))
 
-        return guild
+        return result
 
 
-class MessageConverter(commands.Converter):
+class MessageConverter(commands.IDConverter):
     async def convert(self, ctx, argument):
-        if isinstance(argument, str):
-            match = re.match(r"(?:https?://)?(:?canary|ptb.)?discordapp.com/channels/([0-9]+)/([0-9]+)/([0-9+]+)", argument, re.IGNORECASE)
-            if match:
-                message = (await ctx.bot.get_channel(int(match.group(2))).get_message(int(match.group(3)))).content
-            else:
-                message = argument
-        elif isinstance(argument, int):
-            message = (await ctx.channel.get_message(argument)).content
+        id_ = self._get_id_match(argument)
+        if id_:
+            result = await ctx.channel.get_message(int(id_.group(1)))
         else:
-            message = None
+            match = re.search(r"(?:https?://)?(?:canary|ptb.)?discordapp.com/channels/([0-9]+)/([0-9]+)/([0-9+]+)", argument, re.IGNORECASE)
+            if match:
+                result = await ctx.bot.get_channel(int(match.group(2))).get_message(int(match.group(3)))
+            else:
+                result = None
 
-        if message is None:
-            raise commands.BadArgument('Couldn\'t find any matching message.')
+        if not result:
+            raise commands.BadArgument('Couldn\'t find a message that matches {}'.format(argument))
 
-        print(message)
-        return (await CodeblockConverter().convert(ctx, message)).content
+        return (await CodeblockConverter().convert(ctx, result.content)).content
