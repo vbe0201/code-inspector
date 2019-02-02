@@ -139,7 +139,7 @@ def _random_slice(seq):
 
 
 def _format_missing_required_arg(ctx, param):
-    required, optional = _split_params(ctx.command)
+    required, _ = _split_params(ctx.command)
     missing = list(itertools.dropwhile(lambda p: p != param, required))
     names = human_join(f'`{p.name}`' for p in missing)
 
@@ -187,12 +187,8 @@ def _get_bad_argument(ctx, param):
 
 
 async def _format_bad_argument(ctx, param, error):
-    _, end_content_at = _get_bad_argument(ctx, param)
-    required, optional = map(iter, _split_params(ctx.command))
-    next(itertools.dropwhile(lambda p: p != param, itertools.chain(required, optional)), None)
-
     return (
-        f'{error}\n\n'
+        f'{error}: Wrong usage of param **{param}**\n\n'
         f'Usage: `{ctx.clean_prefix}{ctx.command.signature}`\n'
     )
 

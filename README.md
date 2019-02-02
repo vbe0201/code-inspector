@@ -1,5 +1,6 @@
 # Code Inspector
 
+[![CircleCI](https://circleci.com/gh/itsVale/code-inspector/tree/master.svg?style=svg)](https://circleci.com/gh/itsVale/code-inspector/tree/master)
 [![Build Status](https://travis-ci.com/itsVale/code-inspector.svg?branch=master)](https://travis-ci.com/itsVale/code-inspector)
 [![Updates](https://pyup.io/repos/github/itsVale/code-inspector/shield.svg)](https://pyup.io/repos/github/itsVale/code-inspector/)
 

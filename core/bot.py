@@ -156,7 +156,7 @@ class CodeInspector(commands.AutoShardedBot):
             self.extensions[name] = ext
         else:
             for _, m in inspect.getmembers(ext):
-                if inspect.isclass(m) and type(m) == inspector.MetaCog:
+                if inspect.isclass(m) and isinstance(m, inspector.MetaCog):
                     try:
                         m(self)
                     except Exception as e:

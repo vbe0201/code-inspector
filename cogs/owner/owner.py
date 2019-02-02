@@ -35,14 +35,14 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self._scope = Scope()
-        self.retain = False
+        self._retain = False
         self.last_result = None
-        self.tasks = collections.deque()
+        self._tasks = collections.deque()
         self.task_count = 0
 
     @property
     def scope(self):
-        if self.retain:
+        if self._retain:
             return self._scope
         return Scope()
 
@@ -50,13 +50,13 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
     def submit(self, ctx: commands.Context):
         self.task_count += 1
         cmd_task = CommandTask(self.task_count, ctx, asyncio.Task.current_task())
-        self.tasks.append(cmd_task)
+        self._tasks.append(cmd_task)
 
         try:
             yield cmd_task
         finally:
-            if cmd_task in self.tasks:
-                self.tasks.remove(cmd_task)
+            if cmd_task in self._tasks:
+                self._tasks.remove(cmd_task)
 
     @staticmethod
     def get_syntax_error(e):
@@ -118,11 +118,11 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
     async def tasks(self, ctx: commands.Context):
         """Shows the currently running tasks."""
 
-        if not self.tasks:
+        if not self._tasks:
             return await ctx.send('No currently running tasks.')
 
         paginator = commands.Paginator(max_size=1985)
-        for task in self.tasks:
+        for task in self._tasks:
             paginator.add_line(f'{task.index}: `{task.ctx.command.qualified_name}`, invoked at '
                                f'{task.ctx.message.created_at.strftime("%Y-%m-%d %H:%M:%S")} UTC.')
 
@@ -135,15 +135,15 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
         If the index passed is -1, will cancel the last task instead.
         """
 
-        if not self.tasks:
+        if not self._tasks:
             return await ctx.send('No tasks to cancel.')
 
         if index == -1:
-            task = self.tasks.pop()
+            task = self._tasks.pop()
         else:
-            task = discord.utils.get(self.tasks, index=index)
+            task = discord.utils.get(self._tasks, index=index)
             if task:
-                self.tasks.remove(task)
+                self._tasks.remove(task)
             else:
                 return await ctx.send('Unknown task.')
 
@@ -156,17 +156,17 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
         """Turns variable retention for REPL on or off."""
 
         if toggle:
-            if self.retain:
+            if self._retain:
                 return await ctx.send('Variable retention is already set to on.')
 
-            self.retain = True
+            self._retain = True
             self._scope = Scope()
             return await ctx.send('Variable retention is on. Future REPL sessions will retain their scope.')
 
-        if not self.retain:
+        if not self._retain:
             return await ctx.send('Variable retention is already set to off.')
 
-        self.retain = False
+        self._retain = False
         await ctx.send('Variable retention is off. Future REPL sessions will dispose their scope when done.')
 
     @inspector.command()

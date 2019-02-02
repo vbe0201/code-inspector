@@ -36,7 +36,8 @@ class TransformedDict(abc.MutableMapping):
         """Creates a shallow copy of the current instance."""
         return self.__class__(self)
 
-    def _transform_key(self, key):
+    @staticmethod
+    def _transform_key(key):
         return key
 
 

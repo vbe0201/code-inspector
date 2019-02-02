@@ -22,7 +22,7 @@ def partial_ratio(a, b):
     blocks = m.get_matching_blocks()
 
     scores = []
-    for i, j, n in blocks:
+    for i, j, _ in blocks:
         start = max(j - i, 0)
         end = start + len(short)
         o = SequenceMatcher(None, short, long[start:end])
