@@ -1,31 +1,31 @@
 # An async PostgreSQL driver to interact with a database.
-asyncpg
+asyncpg==0.18.3
 
 # For creating a CLI based on commands and flags to control the bot's behaviour.
-click
+click==7.0
 
 # The Discord API Wrapper this bot uses.
 git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py[voice]
 
 # youtube-dl for extended voice functionality.
-youtube-dl
+youtube-dl==2019.1.30.1
 
 # For monitoring processes of the bot.
-psutil
+psutil==5.5.0
 
 # For parsing the config file.
-PyYAML
+PyYAML==3.13
 
 # Some utilities for processing date and time.
-parsedatetime
-python-dateutil
+parsedatetime==2.4
+python-dateutil==2.7.5
 
 # To speed up the asyncio event loop.
-uvloop
+uvloop==0.12.0
 
 # Some useful general utilities a few commands require.
-humanize
+humanize==0.5.1
 import_expression<1.0.0,>=0.3.7
-more-itertools
-lxml
-pillow
+more-itertools==5.0.0
+lxml==4.3.0
+pillow==5.4.1
