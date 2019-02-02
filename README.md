@@ -133,7 +133,7 @@ Your PostgreSQL setup is now done. You can log out of psql by typing `\q`.
 
 ### config.yaml
 
-The next step is to add configuration details to your bot over a `config.json` file.
+The next step is to add configuration details to your bot over a `config.yaml` file.
 
 In the repo, there's a file called `config.example.yaml`. Rename it to `config.yaml`
 and fill out all details.
