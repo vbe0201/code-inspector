@@ -1,5 +1,8 @@
 # Code Inspector
 
+[![Build Status](https://travis-ci.com/itsVale/code-inspector.svg?branch=master)](https://travis-ci.com/itsVale/code-inspector)
+
+
 Code Inspector is a bot that mainly provides tools intended to support programming
 servers on [Discord](https://discordapp.com).
 
