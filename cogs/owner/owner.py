@@ -15,6 +15,7 @@ import typing
 import discord
 from discord.ext import commands
 
+from core import commands as inspector
 from utils.converters import Codeblock, CodeblockConverter, Guild
 from utils.db import PostgreSQLExecutor, TableFormat
 from utils.exception_handling import ReplResponseReactor
@@ -28,7 +29,7 @@ from utils.voice import BasicYTDLSource, connected_check, playing_check, vc_chec
 CommandTask = collections.namedtuple('CommandTask', 'index ctx task')
 
 
-class Owner:
+class Owner(metaclass=inspector.MetaCog, category='Owner'):
     __cat_line_regex = re.compile(r"(?:\./+)?(.+?)(?:#L?(\d+)(?:-L?(\d+))?)?$")
 
     def __init__(self, bot: commands.Bot):
@@ -73,7 +74,7 @@ class Owner:
             raise commands.NotOwner('You must own this bot to use this command.')
         return True
 
-    @commands.command()
+    @inspector.command()
     async def cat(self, ctx: commands.Context, argument: str):
         """Read out a file, using syntax highlighting if detected.
 
@@ -113,7 +114,7 @@ class Owner:
 
         await PaginatorInterface(ctx.bot, paginator, owner=ctx.author).send_to(ctx)
 
-    @commands.command()
+    @inspector.command()
     async def tasks(self, ctx: commands.Context):
         """Shows the currently running tasks."""
 
@@ -127,7 +128,7 @@ class Owner:
 
         await PaginatorInterface(ctx.bot, paginator, owner=ctx.author).send_to(ctx)
 
-    @commands.command()
+    @inspector.command()
     async def cancel(self, ctx: commands.Context, *, index: int):
         """Cancels a task with the given index.
 
@@ -150,7 +151,7 @@ class Owner:
         await ctx.send(f'Cancelled task {task.index}: `{task.ctx.command.qualified_name}`, '
                        f'invoked at {task.ctx.message.created_at.strftime("%Y-%m-%d %H:%M:%S")} UTC.')
 
-    @commands.command()
+    @inspector.command()
     async def retain(self, ctx: commands.Context, *, toggle: bool):
         """Turns variable retention for REPL on or off."""
 
@@ -168,7 +169,7 @@ class Owner:
         self.retain = False
         await ctx.send('Variable retention is off. Future REPL sessions will dispose their scope when done.')
 
-    @commands.command()
+    @inspector.command()
     async def eval(self, ctx: commands.Context, *, code: CodeblockConverter):
         """Legacy eval."""
 
@@ -213,7 +214,7 @@ class Owner:
                             self.last_result = result
                             await safe_send(f'{value}{result}')
 
-    @commands.command(aliases=['py'])
+    @inspector.command(aliases=['py'])
     async def python(self, ctx: commands.Context, *, code: CodeblockConverter):
         """Direct evaluation of Python code."""
 
@@ -256,7 +257,7 @@ class Owner:
 
                             await ctx.send(result.replace(self.bot.http.token, '<Token omitted>'))
 
-    @commands.command(aliases=['py_inspect', 'pyi', 'pythoninspect'])
+    @inspector.command(aliases=['py_inspect', 'pyi', 'pythoninspect'])
     async def python_inspect(self, ctx: commands.Context, *, code: CodeblockConverter):
         """Evaluation of Python code with inspect information."""
 
@@ -283,7 +284,7 @@ class Owner:
 
                     await PaginatorInterface(ctx.bot, paginator, owner=ctx.author).send_to(ctx)
 
-    @commands.command(aliases=['sh'])
+    @inspector.command(aliases=['sh'])
     async def shell(self, ctx: commands.Context, *, script: CodeblockConverter):
         """Executes statements in the system shell.
 
@@ -308,7 +309,7 @@ class Owner:
 
                 await interface.add_line(f'\n[Status] Return code {reader.close_code}')
 
-    @commands.command()
+    @inspector.command()
     async def sql(self, ctx: commands.Context, *, query: CodeblockConverter):
         """Executes SQL queries and displays their results in a rST table."""
 
@@ -334,13 +335,13 @@ class Owner:
 
                     await PaginatorInterface(ctx.bot, paginator, owner=ctx.author).send_to(ctx)
 
-    @commands.command()
+    @inspector.command()
     async def git(self, ctx: commands.Context, *, command: CodeblockConverter):
         """Shortcut for `ci!sh git`. Invokes the system shell."""
 
         return await ctx.invoke(self.shell, argument=Codeblock(command.language, 'git ' + command.content))
 
-    @commands.command(aliases=['reload'])
+    @inspector.command(aliases=['reload'])
     async def load(self, ctx: commands.Context, *extensions):
         """Loads or reloads the given extension names.
 
@@ -366,7 +367,7 @@ class Owner:
         for page in paginator.pages:
             await ctx.send(page)
 
-    @commands.command()
+    @inspector.command()
     async def unload(self, ctx: commands.Context, *extensions):
         """Unloads the given extension names.
 
@@ -388,7 +389,7 @@ class Owner:
         for page in paginator.pages:
             await ctx.send(page)
 
-    @commands.group(aliases=['vc'])
+    @inspector.group(aliases=['vc'])
     @commands.check(vc_check)
     async def voice(self, ctx: commands.Context):
         """Voice-related commands.
@@ -525,7 +526,7 @@ class Owner:
         voice.play(discord.PCMVolumeTransformer(BasicYTDLSource(url)))
         await ctx.send(f'Playing in {voice.channel.name}.')
 
-    @commands.command()
+    @inspector.command()
     async def su(self, ctx: commands.Context, member: typing.Union[discord.Member, discord.User], *, command: str):
         """Run a command as someone else.
 
@@ -538,7 +539,7 @@ class Owner:
 
         return await alt_ctx.command.invoke(alt_ctx)
 
-    @commands.command()
+    @inspector.command()
     async def sudo(self, ctx: commands.Context, *, command: str):
         """Runs a command bypassing all checks and cooldowns.
 
@@ -551,7 +552,7 @@ class Owner:
 
         return await alt_ctx.command.reinvoke(alt_ctx)
 
-    @commands.command()
+    @inspector.command()
     async def debug(self, ctx: commands.Context, *, command: str):
         """Run a command timing execution and catching exceptions."""
 
@@ -567,14 +568,14 @@ class Owner:
         end = time.perf_counter()
         await ctx.send(f'Command `{alt_ctx.command.qualified_name}` finished in {end - start:.3f}s.')
 
-    @commands.command(aliases=['logout'])
+    @inspector.command(aliases=['logout'])
     async def shutdown(self, ctx: commands.Context):
         """Logs this bot out."""
 
         await ctx.send('Logging out now...')
         await ctx.bot.logout()
 
-    @commands.command()
+    @inspector.command()
     async def leave(self, ctx: commands.Context, *, server: Guild):
         """Leaves a server.
 
@@ -583,9 +584,3 @@ class Owner:
 
         await ctx.send('My owner doesn\'t want me to stay here any longer. Bye bye.')
         await server.leave()
-
-
-def setup(bot: commands.Bot):
-    """Adds the owner cog to the bot."""
-
-    bot.add_cog(Owner(bot))

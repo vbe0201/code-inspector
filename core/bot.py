@@ -16,7 +16,7 @@ import psutil
 import yaml
 from discord.ext import commands
 
-from . import context
+from . import commands as inspector
 
 from utils import db
 from utils.scheduler import DatabaseScheduler
@@ -28,7 +28,7 @@ command_logger = logging.getLogger('commands')
 
 # loading our config
 with open('config.yaml', 'rb') as f:
-    config = {**yaml.safe_load(f)}
+    config = yaml.safe_load(f)
 
 
 # permission calculations for bot invitations
@@ -53,29 +53,6 @@ _PERMISSIONS = [
 _PERMISSIONS = _define_permissions(*_PERMISSIONS)
 del _define_permissions
 
-_sentinel = object()
-
-
-def _is_cog_hidden(cog):
-    hidden = getattr(cog, '__hidden__', _sentinel)
-    if hidden is not _sentinel:
-        return hidden
-
-    try:
-        module_name = cog.__module__
-    except AttributeError:
-        return False
-
-    while module_name:
-        module = sys.modules[module_name]
-        hidden = getattr(module, '__hidden__', _sentinel)
-        if hidden is not _sentinel:
-            return hidden
-
-        module_name = module_name.rpartition('.')[0]
-
-    return False
-
 
 VersionInfo = collections.namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 
@@ -96,6 +73,7 @@ class CodeInspector(commands.Bot):
         self.creator = None
 
         self.cogs = CaseInsensitiveDict()
+        self.categories = collections.defaultdict(list)
         self.owners = config['owners']
 
         self.command_counter = collections.Counter()
@@ -134,13 +112,6 @@ class CodeInspector(commands.Bot):
         self.db_scheduler.close()
         await super().logout()
 
-    def add_cog(self, cog):
-        super().add_cog(cog)
-
-        if _is_cog_hidden(cog):
-            for _, command in inspect.getmembers(cog, lambda m: isinstance(m, commands.Command)):
-                command.hidden = True
-
     @staticmethod
     def search_extensions(name):
         spec = importlib.util.find_spec(name)
@@ -154,25 +125,47 @@ class CodeInspector(commands.Bot):
         return (name for info, name, is_pkg in pkgutil.iter_modules(path, spec.name + '.')
                 if not is_pkg)
 
+    def _add_extension(self, name):
+        ext = importlib.import_module(name)
+        if hasattr(ext, 'setup'):
+            ext.setup(self)
+            self.extensions[name] = ext
+        else:
+            for _, m in inspect.getmembers(ext):
+                if inspect.isclass(m) and type(m) == inspector.MetaCog:
+                    try:
+                        m(self)
+                    except Exception as e:
+                        logger.error(e)
+
+                    if name not in self.extensions:
+                        self.extensions[name] = ext
+                else:
+                    continue
+
+        if name not in self.extensions:
+            del ext
+            del sys.modules[name]
+            raise discord.ClientException('extension does not have a setup function')
+
     def load_extension(self, name):
         modules = self.search_extensions(name)
         if not modules:
-            return super().load_extension(name)
+            return self._add_extension(name)
 
-        for name in modules:
+        for module in modules:
             try:
-                super().load_extension(name)
+                self._add_extension(module)
             except discord.ClientException as e:
                 if 'extension does not have a setup function' not in str(e):
                     raise
 
-        self.extensions[name] = importlib.import_module(name)
-
     def unload_extension(self, name):
         super().unload_extension(name)
 
-        for module_name in list(self.extensions):
+        for module_name in self.extensions.keys():
             if name == module_name or module_name.startswith(name + '.'):
+                self.remove_cog(module_name)
                 del self.extensions[module_name]
 
     @contextlib.contextmanager
@@ -186,7 +179,7 @@ class CodeInspector(commands.Bot):
             self.remove_listener(func)
 
     async def process_commands(self, message):
-        ctx = await self.get_context(message, cls=context.Context)
+        ctx = await self.get_context(message, cls=inspector.Context)
 
         if ctx.command is None:
             return

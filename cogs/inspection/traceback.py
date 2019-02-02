@@ -10,6 +10,7 @@ from discord.ext import commands
 from . import get_source_revision
 from .source_resolver import SourceResolver
 
+from core import commands as inspector
 from utils import db
 from utils.converters import CodeblockConverter, MessageConverter
 
@@ -26,7 +27,7 @@ class SourceNotes(db.Table, table_name='source_notes'):
     __create_extra__ = ['PRIMARY KEY(line, error)']
 
 
-class TracebackInspection:
+class TracebackInspection(metaclass=inspector.MetaCog, category='Inspection'):
     _TRACEBACK_REGEX = re.compile(r"(?:Traceback.*)*[\n\s]+(?:File\s\"(.*)\",\sline\s(\d+)(?:,\sin\s.*)?)[\n\s]+(.*)")
 
     def __init__(self, bot):
@@ -56,7 +57,7 @@ class TracebackInspection:
 
             self.source_resolver.read_source()
 
-    @commands.command()
+    @inspector.command()
     async def inspect(self, ctx: commands.Context, *, message: MessageConverter):
         """Inspects a Python traceback to retrieve error information.
 
@@ -89,8 +90,7 @@ class TracebackInspection:
         error = re.search(r"(.*Error):", message, re.MULTILINE)
         error = error.group(1) if error else None
 
-        fmt = ('```yaml\nIn file: "{file}, line {index}"\n  - {line}\n\n'
-               '# What causes this error?\n{reason}\n\n# Possible solution:\n{solution}```')
+        fmt = '```yaml\nIn file: "{file}.py", line {index}\n  - {line}\n\n# What causes this error?\n{reason}\n\n# Possible solution:\n{solution}```'
 
         if error is None:
             reason = 'Unknown.'
@@ -105,7 +105,7 @@ class TracebackInspection:
                 reason, solution = row['reason'], row['solution']
 
         await ctx.send(
-            fmt.format(file=file, index=index, line=line, reason=reason, solution=solution).replace('\\n', '\n').replace('``', '`\u200b`')
+            fmt.format(file=file, index=index, line=line, reason=reason, solution=solution).replace('\\n', '\n')
         )
 
     async def on_message(self, message: discord.Message):
@@ -140,9 +140,3 @@ class TracebackInspection:
                                                         '[Community examples](https://gist.github.com/EvieePy/d78c061a4798ae81be9825468fe146be)'))
 
             await message.channel.send(embed=embed)
-
-
-def setup(bot: commands.Bot):
-    """Adds the traceback cog to the bot."""
-
-    bot.add_cog(TracebackInspection(bot))

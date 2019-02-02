@@ -6,6 +6,7 @@ import asyncpg
 import discord
 from discord.ext import commands
 
+from core import commands as inspector
 from utils import db, converters
 from utils.paginator import PaginatorEmbedInterface, WrappedPaginator
 
@@ -35,7 +36,7 @@ class Blacklisted(commands.CheckFailure):
 _GuildOrUser = typing.Union[converters.Guild, discord.User]
 
 
-class Blacklists:
+class Blacklists(metaclass=inspector.MetaCog, category='Owner'):
     def __init__(self, bot):
         self.bot = bot
 
@@ -83,7 +84,7 @@ class Blacklists:
                  .add_field(name='Reason:', value=reason, inline=False))
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=['bl', 'block'])
+    @inspector.command(aliases=['bl', 'block'])
     async def blacklist(self, ctx: commands.Context, server_or_user: _GuildOrUser, *, reason: str = ''):
         """Blacklists either a server or a user from using the bot."""
 
@@ -100,7 +101,7 @@ class Blacklists:
         else:
             await self._blacklist_embed(ctx, 'blacklisted', 0xff0000, _blocked_icon, server_or_user, reason, time)
 
-    @commands.command(aliases=['ubl', 'unblock'])
+    @inspector.command(aliases=['ubl', 'unblock'])
     async def unblacklist(self, ctx: commands.Context, server_or_user: _GuildOrUser, *, reason: str = ''):
         """Unblacklists either a server or a user."""
 
@@ -115,7 +116,7 @@ class Blacklists:
 
         await self._blacklist_embed(ctx, 'unblacklisted', 0x00FF00, _unblocked_icon, server_or_user, reason, datetime.utcnow())
 
-    @commands.command()
+    @inspector.command()
     async def blacklisted(self, ctx: commands.Context):
         """Lists all blacklisted users and guilds."""
 
@@ -141,9 +142,3 @@ class Blacklists:
             paginator.add_line(entry)
 
         return await PaginatorEmbedInterface(ctx.bot, paginator, owner=ctx.author).send_to(ctx)
-
-
-def setup(bot: commands.Bot):
-    """Adds the Blacklist extension to the bot."""
-
-    bot.add_cog(Blacklists(bot))
