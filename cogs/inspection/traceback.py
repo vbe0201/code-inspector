@@ -5,26 +5,14 @@ import importlib
 import re
 
 import discord
-from discord.ext import commands
 
 from . import get_source_revision
 from .source_resolver import SourceResolver
 
 from core import commands as inspector
-from utils import db
-from utils.converters import CodeblockConverter, MessageConverter
+from utils.converters import CodeblockConverter
 
 _EXCLAMATION_ICON = 'https://twemoji.maxcdn.com/2/72x72/2757.png'
-
-
-class SourceNotes(db.Table, table_name='source_notes'):
-    line = db.Column(db.Text)
-    error = db.Column(db.Text)
-    reason = db.Column(db.Text)
-    solution = db.Column(db.Text)
-
-    notes_index = db.Index(line, error)
-    __create_extra__ = ['PRIMARY KEY(line, error)']
 
 
 class TracebackInspection(metaclass=inspector.MetaCog, category='Inspection'):
@@ -56,57 +44,6 @@ class TracebackInspection(metaclass=inspector.MetaCog, category='Inspection'):
             importlib.reload(discord)
 
             self.source_resolver.read_source()
-
-    @inspector.command()
-    async def inspect(self, ctx: commands.Context, *, message: MessageConverter):
-        """Inspects a Python traceback to retrieve error information.
-
-        <param message>
-            Some kind of source to retrieve the traceback from.
-            You can specify either a Discord message link, an ID
-            of a message in the current channel or the plain traceback
-            content.
-        </param>
-
-        <example>cc!inspect https://discordapp.com/channels/1234567890/1234567890/1234567890</example>
-        <example>cc!inspect 1234567890</example>
-        <example>
-        cc!inspect
-        ```
-        <Traceback here>
-        ```
-        </example>
-        """
-
-        matches = list(self._TRACEBACK_REGEX.finditer(message))
-        if not matches:
-            return await ctx.send('I couldn\'t find any traceback to inspect. :eyes:')
-
-        path = matches[-1].group(1).strip()
-        file = re.search(r"[\\/]([^\\/]*)\.py", path).group(1).strip()
-        index = int(matches[-1].group(2).strip())
-        line = matches[-1].group(3).strip()
-
-        error = re.search(r"(.*Error):", message, re.MULTILINE)
-        error = error.group(1) if error else None
-
-        fmt = '```yaml\nIn file: "{file}.py", line {index}\n  - {line}\n\n# What causes this error?\n{reason}\n\n# Possible solution:\n{solution}```'
-
-        if error is None:
-            reason = 'Unknown.'
-            solution = 'No solutions to the issue found.'
-        else:
-            query = 'SELECT reason, solution FROM source_notes WHERE line = $1 AND error = $2;'
-            row = await ctx.db.fetchrow(query, line, error)
-            if not row:
-                reason = 'Unknown.'
-                solution = 'No solutions to the issue found.'
-            else:
-                reason, solution = row['reason'], row['solution']
-
-        await ctx.send(
-            fmt.format(file=file, index=index, line=line, reason=reason, solution=solution).replace('\\n', '\n')
-        )
 
     async def on_message(self, message: discord.Message):
         """Inspects sent messages to give a warning about tracebacks
