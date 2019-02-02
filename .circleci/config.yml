@@ -1,0 +1,54 @@
+# Python CircleCI 2.0 configuration
+# # Check https://circleci.com/docs/2.0/language-python/ for more details
+
+version: 2
+jobs:
+  test-bot:
+    docker:
+      - image: circleci/python3.7.2
+      - image: circleci/postgres:11
+        environment:
+          POSTGRES_USER: ci
+          POSTGRES_DB: code_inspector
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements.txt" }}
+            # Fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run:
+          name: Install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -U pylama
+            pip install -U -r requirements.txt
+
+      - run:
+          name: Run tests
+          command: |
+            . venv/bin/activate
+            pylama .
+            python launch.py --stream-log
+
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+
+      - store_artifacts:
+          path: test-reports
+          destination: test-reports
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test-bot
