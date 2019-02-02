@@ -119,7 +119,7 @@ def main(ctx: click.Context, stream_log: bool = False):
                     'port': 5432,
                     'user': 'ci',
                     'database': 'code_inspector',
-                    'password': 'ci password',
+                    'password': '',
                     'timeout': 60,
                 },
                 'owners': os.getenv('BOT_OWNERS'),

@@ -21,7 +21,7 @@ install:
   - pip install -U -r requirements.txt
 
 before_script:
-  - psql -c "CREATE ROLE ci LOGIN PASSWORD 'ci password';"
+  - psql -c "CREATE ROLE ci SUPERUSER;"
   - psql -c "CREATE DATABASE code_inspector OWNER ci;"
 
 script:
