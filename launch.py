@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import asyncio
 import contextlib
 import importlib
@@ -63,14 +66,22 @@ def log(stream=False):
             logger.removeHandler(handler)
 
 
-def run_bot(stream_log: bool = False):
-    bot = CodeInspector()
+def run_bot(stream_log: bool = False, *, ci: bool = False, **bot_config):
+    bot = CodeInspector(bot_config)
 
     with log(stream_log):
         try:
-            bot.run()
+            if ci:
+                bot.loop.create_task(bot.start(bot.token))
+                bot.loop.run_until_complete(bot.ci_stats())
+            else:
+                bot.run()
         except KeyboardInterrupt:
-            bot.loop.create_task(bot.logout())
+            pass
+        finally:
+            bot.loop.run_until_complete(bot.logout())
+            bot.loop.close()
+            os._exit(0)
 
 
 async def init_db(quiet: bool = True):
@@ -93,10 +104,30 @@ async def init_db(quiet: bool = True):
 @click.group(invoke_without_command=True, options_metavar='[options]')
 @click.option('--stream-log', is_flag=True, help='Adds a stderr stream handler to the bot\'s logging component.')
 @click.pass_context
-def main(ctx: click.Context, stream_log: bool):
+def main(ctx: click.Context, stream_log: bool = False):
     """The main group of our bot. If invoked without subcommands, this runs our bot."""
     if ctx.invoked_subcommand is None:
-        run_bot(stream_log)
+        ci = os.getenv('CI', False)
+        if ci:
+            bot_config = {
+                'token': os.getenv('BOT_TOKEN'),
+                'prefix': os.getenv('BOT_PREFIX'),
+                'description': os.getenv('BOT_DESCRIPTION'),
+                'webhook_url': os.getenv('BOT_ERROR_WEBHOOK_URL'),
+                'pg_credentials': {
+                    'host': '127.0.0.1',
+                    'port': 5432,
+                    'user': 'ci',
+                    'database': 'code_inspector',
+                    'password': 'ci password',
+                    'timeout': 60,
+                },
+                'owners': os.getenv('BOT_OWNERS'),
+            }
+        else:
+            bot_config = config
+
+        run_bot(stream_log, ci=ci, **bot_config)
 
 
 @main.group(short_help='database stuff', options_metavar='[options]')

@@ -12,8 +12,8 @@ from datetime import datetime
 
 import aiohttp
 import discord
+import humanize
 import psutil
-import yaml
 from discord.ext import commands
 
 from . import commands as inspector
@@ -25,10 +25,6 @@ from utils.time import duration_units
 
 logger = logging.getLogger(__name__)
 command_logger = logging.getLogger('commands')
-
-# loading our config
-with open('config.yaml', 'rb') as f:
-    config = yaml.safe_load(f)
 
 
 # permission calculations for bot invitations
@@ -57,13 +53,13 @@ del _define_permissions
 VersionInfo = collections.namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 
 
-class CodeInspector(commands.Bot):
+class CodeInspector(commands.AutoShardedBot):
     __version__ = '1.0.0'
     version_info = VersionInfo(1, 0, 0, 'final', 0)
 
-    def __init__(self):
+    def __init__(self, config: dict):
         super().__init__(
-            command_prefix=commands.when_mentioned_or('cc!'),
+            command_prefix=commands.when_mentioned_or(*config['prefix']),
             description=config['description'],
             case_insensitive=True,
             fetch_offline_members=False,
@@ -81,6 +77,8 @@ class CodeInspector(commands.Bot):
         self.start_time = datetime.utcnow()
         self.pool = self.loop.run_until_complete(db.create_pool(config['pg_credentials']))
         self.process = psutil.Process(os.getpid())
+        self.token = config['token']
+        self.webhook_url = config['webhook_url']
 
         self.db_scheduler = DatabaseScheduler(self.pool, timefunc=datetime.utcnow)
         self.db_scheduler.add_callback(self._dispatch_from_scheduler)
@@ -105,7 +103,33 @@ class CodeInspector(commands.Bot):
         return await super().is_owner(user)
 
     def run(self):
-        super().run(config['token'], reconnect=True)
+        super().run(self.token, reconnect=True)
+
+    async def ci_stats(self):
+        await self.wait_until_ready()
+
+        async with self.pool.acquire() as db:
+            with self.process.oneshot():
+                memory = self.process.memory_full_info()
+
+                print(
+                    '================ CI Stats ================\n'
+                    '----------- System information -----------\n'
+                    f'Running on {sys.platform} with Python {sys.version}.\n'
+                    f'Using {humanize.naturalsize(memory.rss)} physical memory'
+                    f' and {humanize.naturalsize(memory.vms)} virtual memory,'
+                    f' of which {humanize.naturalsize(memory.uss)} unique to this process.\n'
+                    f'PostgreSQL version: {".".join(map(str, db.get_server_version()[:3]))}\n'
+                    '------------- Bot statistics -------------\n'
+                    f'Version: {self.__version__}\n'
+                    f'Online for: {self.uptime}\n'
+                    f'Guilds: {len(self.guilds)}\n'
+                    f'Users: {len(self.users)}\n'
+                    f'Voice channels: {len(self.voice_clients)}\n'
+                    f'Shards: {len(self.shards)}\n'
+                    f'discord.py version: {discord.__version__}\n'
+                    '=========================================='
+                )
 
     async def logout(self):
         await self.session.close()
@@ -245,7 +269,7 @@ class CodeInspector(commands.Bot):
 
     @property
     def webhook(self):
-        webhook_url = config['webhook_url']
+        webhook_url = self.webhook_url
         if webhook_url:
             return discord.Webhook.from_url(webhook_url, adapter=discord.AsyncWebhookAdapter(self.session))
 

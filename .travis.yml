@@ -1,0 +1,29 @@
+language: python
+sudo: false
+cache: pip
+
+python:
+  - 3.6
+
+matrix:
+  include:
+    # Python 3.7 workaround
+    # https://github.com/travis-ci/travis-ci/issues/9815
+    - python: 3.7.2
+      dist: xenial
+      sudo: true
+
+addons:
+  postgresql: "11"
+
+install:
+  - pip install -U pylama
+  - pip install -U -r requirements.txt
+
+before_script:
+  - psql -c "CREATE ROLE ci LOGIN PASSWORD 'ci password';"
+  - psql -c "CREATE DATABASE code_inspector OWNER ci;"
+
+script:
+  - pylama .
+  - python launch.py --stream-log
