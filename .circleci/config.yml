@@ -5,7 +5,7 @@ version: 2
 jobs:
   test-bot:
     docker:
-      - image: circleci/python3.7.2
+      - image: circleci/python:3.7.2
       - image: circleci/postgres:11
         environment:
           POSTGRES_USER: ci
