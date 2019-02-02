@@ -25,7 +25,7 @@ finally:
     loop = asyncio.get_event_loop()
 
 with open('config.yaml', 'rb') as f:
-    config = {**yaml.safe_load(f)}
+    config = yaml.safe_load(f)
 
 
 @contextlib.contextmanager
