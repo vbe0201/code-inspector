@@ -1,7 +1,7 @@
 # Code Inspector
 
 [![Build Status](https://travis-ci.com/itsVale/code-inspector.svg?branch=master)](https://travis-ci.com/itsVale/code-inspector)
-
+[![Updates](https://pyup.io/repos/github/itsVale/code-inspector/shield.svg)](https://pyup.io/repos/github/itsVale/code-inspector/)
 
 Code Inspector is a bot that mainly provides tools intended to support programming
 servers on [Discord](https://discordapp.com).
