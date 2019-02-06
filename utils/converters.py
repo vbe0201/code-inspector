@@ -6,7 +6,7 @@ import re
 import discord
 from discord.ext import commands
 
-__all__ = ['CodeblockConverter', 'Guild', 'MessageConverter']
+__all__ = ['Codeblock', 'CodeblockConverter', 'Guild', 'MessageConverter']
 
 Codeblock = collections.namedtuple('Codeblock', 'language content')
 CODEBLOCK_REGEX = re.compile("^(?:```([A-Za-z0-9\\-.]*)\n)?(.+?)(?:```)?$", re.S)
