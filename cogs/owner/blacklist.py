@@ -37,15 +37,15 @@ _GuildOrUser = typing.Union[converters.Guild, discord.User]
 
 
 class Blacklists(metaclass=inspector.MetaCog, category='Owner'):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    async def __local_check(self, ctx: commands.Context):
+    async def __local_check(self, ctx: inspector.Context):
         if not await ctx.bot.is_owner(ctx.author):
             raise commands.NotOwner('You must own this bot to use this command.')
         return True
 
-    async def __global_check_once(self, ctx):
+    async def __global_check_once(self, ctx: inspector.Context):
         row = await self.get_blacklist(ctx.author.id, con=ctx.db)
         if row:
             raise Blacklisted('You have been blacklisted by my owner.', row['reason'])
@@ -61,7 +61,7 @@ class Blacklists(metaclass=inspector.MetaCog, category='Owner'):
 
         return True
 
-    async def on_command_error(self, ctx, error):
+    async def on_command_error(self, ctx: inspector.Context, error: typing.Union[Blacklisted, typing.Any]):
         if isinstance(error, Blacklisted):
             await ctx.send(embed=error.to_embed())
 
@@ -85,7 +85,7 @@ class Blacklists(metaclass=inspector.MetaCog, category='Owner'):
         await ctx.send(embed=embed)
 
     @inspector.command(aliases=['bl', 'block'])
-    async def blacklist(self, ctx: commands.Context, server_or_user: _GuildOrUser, *, reason: str = ''):
+    async def blacklist(self, ctx: inspector.Context, server_or_user: _GuildOrUser, *, reason: str = ''):
         """Blacklists either a server or a user from using the bot."""
 
         if await self.bot.is_owner(server_or_user):
@@ -102,7 +102,7 @@ class Blacklists(metaclass=inspector.MetaCog, category='Owner'):
             await self._blacklist_embed(ctx, 'blacklisted', 0xff0000, _blocked_icon, server_or_user, reason, time)
 
     @inspector.command(aliases=['ubl', 'unblock'])
-    async def unblacklist(self, ctx: commands.Context, server_or_user: _GuildOrUser, *, reason: str = ''):
+    async def unblacklist(self, ctx: inspector.Context, server_or_user: _GuildOrUser, *, reason: str = ''):
         """Unblacklists either a server or a user."""
 
         if await self.bot.is_owner(server_or_user):
@@ -117,7 +117,7 @@ class Blacklists(metaclass=inspector.MetaCog, category='Owner'):
         await self._blacklist_embed(ctx, 'unblacklisted', 0x00FF00, _unblocked_icon, server_or_user, reason, datetime.utcnow())
 
     @inspector.command()
-    async def blacklisted(self, ctx: commands.Context):
+    async def blacklisted(self, ctx: inspector.Context):
         """Lists all blacklisted users and guilds."""
 
         def _get_user_or_guild(index, snowflake):

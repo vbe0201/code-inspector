@@ -47,7 +47,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
         return Scope()
 
     @contextlib.contextmanager
-    def submit(self, ctx: commands.Context):
+    def submit(self, ctx: inspector.Context):
         self.task_count += 1
         cmd_task = CommandTask(self.task_count, ctx, asyncio.Task.current_task())
         self._tasks.append(cmd_task)
@@ -69,13 +69,13 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
         return ''.join(re.sub(r'File ".*[\\/]([^\\/]+.py)"', r'File "\1"', line)
                        for line in traceback.format_exception(type(error), error, error.__traceback__))
 
-    async def __local_check(self, ctx: commands.Context):
+    async def __local_check(self, ctx: inspector.Context):
         if not await ctx.bot.is_owner(ctx.author):
             raise commands.NotOwner('You must own this bot to use this command.')
         return True
 
     @inspector.command()
-    async def cat(self, ctx: commands.Context, argument: str):
+    async def cat(self, ctx: inspector.Context, argument: str):
         """Read out a file, using syntax highlighting if detected.
 
         Lines and linespans are supported by adding `#L12` or `#L12-14` etc to the end of the filename.
@@ -115,7 +115,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
         await PaginatorInterface(ctx.bot, paginator, owner=ctx.author).send_to(ctx)
 
     @inspector.command()
-    async def tasks(self, ctx: commands.Context):
+    async def tasks(self, ctx: inspector.Context):
         """Shows the currently running tasks."""
 
         if not self._tasks:
@@ -129,7 +129,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
         await PaginatorInterface(ctx.bot, paginator, owner=ctx.author).send_to(ctx)
 
     @inspector.command()
-    async def cancel(self, ctx: commands.Context, *, index: int):
+    async def cancel(self, ctx: inspector.Context, *, index: int):
         """Cancels a task with the given index.
 
         If the index passed is -1, will cancel the last task instead.
@@ -152,7 +152,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
                        f'invoked at {task.ctx.message.created_at.strftime("%Y-%m-%d %H:%M:%S")} UTC.')
 
     @inspector.command()
-    async def retain(self, ctx: commands.Context, *, toggle: bool):
+    async def retain(self, ctx: inspector.Context, *, toggle: bool):
         """Turns variable retention for REPL on or off."""
 
         if toggle:
@@ -170,7 +170,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
         await ctx.send('Variable retention is off. Future REPL sessions will dispose their scope when done.')
 
     @inspector.command()
-    async def eval(self, ctx: commands.Context, *, code: CodeblockConverter):
+    async def eval(self, ctx: inspector.Context, *, code: CodeblockConverter):
         """Legacy eval."""
 
         env = {**get_var_dict_from_ctx(ctx), **globals(), '_': self.last_result}
@@ -215,7 +215,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
                             await safe_send(f'{value}{result}')
 
     @inspector.command(aliases=['py'])
-    async def python(self, ctx: commands.Context, *, code: CodeblockConverter):
+    async def python(self, ctx: inspector.Context, *, code: CodeblockConverter):
         """Direct evaluation of Python code."""
 
         arg_dict = get_var_dict_from_ctx(ctx)
@@ -258,7 +258,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
                             await ctx.send(result.replace(self.bot.http.token, '<Token omitted>'))
 
     @inspector.command(aliases=['py_inspect', 'pyi', 'pythoninspect'])
-    async def python_inspect(self, ctx: commands.Context, *, code: CodeblockConverter):
+    async def python_inspect(self, ctx: inspector.Context, *, code: CodeblockConverter):
         """Evaluation of Python code with inspect information."""
 
         arg_dict = get_var_dict_from_ctx(ctx)
@@ -285,7 +285,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
                     await PaginatorInterface(ctx.bot, paginator, owner=ctx.author).send_to(ctx)
 
     @inspector.command(aliases=['sh'])
-    async def shell(self, ctx: commands.Context, *, script: CodeblockConverter):
+    async def shell(self, ctx: inspector.Context, *, script: CodeblockConverter):
         """Executes statements in the system shell.
 
         This uses the bash shell. Execution can be cancelled by closing the paginator.
@@ -310,7 +310,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
                 await interface.add_line(f'\n[Status] Return code {reader.close_code}')
 
     @inspector.command()
-    async def sql(self, ctx: commands.Context, *, query: CodeblockConverter):
+    async def sql(self, ctx: inspector.Context, *, query: CodeblockConverter):
         """Executes SQL queries and displays their results in a rST table."""
 
         async with ReplResponseReactor(ctx.message):
@@ -336,13 +336,13 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
                     await PaginatorInterface(ctx.bot, paginator, owner=ctx.author).send_to(ctx)
 
     @inspector.command()
-    async def git(self, ctx: commands.Context, *, command: CodeblockConverter):
+    async def git(self, ctx: inspector.Context, *, command: CodeblockConverter):
         """Shortcut for `ci!sh git`. Invokes the system shell."""
 
         return await ctx.invoke(self.shell, argument=Codeblock(command.language, 'git ' + command.content))
 
     @inspector.command(aliases=['reload'])
-    async def load(self, ctx: commands.Context, *extensions):
+    async def load(self, ctx: inspector.Context, *extensions):
         """Loads or reloads the given extension names.
 
         Reports any extension that failed to load.
@@ -368,7 +368,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
             await ctx.send(page)
 
     @inspector.command()
-    async def unload(self, ctx: commands.Context, *extensions):
+    async def unload(self, ctx: inspector.Context, *extensions):
         """Unloads the given extension names.
 
         Reports any extension that failed to unload.
@@ -391,7 +391,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
 
     @inspector.group(aliases=['vc'])
     @commands.check(vc_check)
-    async def voice(self, ctx: commands.Context):
+    async def voice(self, ctx: inspector.Context):
         """Voice-related commands.
 
         If invoked without subcommand, relays current voice state.
@@ -410,7 +410,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
                        f'{"paused" if voice.is_paused() else "playing" if voice.is_playing() else "idle"}.')
 
     @voice.command(name='join', aliases=['connect'])
-    async def voice_join(self, ctx: commands.Context, *, destination: typing.Union[discord.VoiceChannel, discord.Member] = None):
+    async def voice_join(self, ctx: inspector.Context, *, destination: typing.Union[discord.VoiceChannel, discord.Member] = None):
         """Joins a voice channel, or moves to it if already connected.
 
         Passing a voice channel uses that voice channel.
@@ -435,7 +435,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
         await ctx.send(f'Connected to {destination.name}.')
 
     @voice.command(name='disconnect', aliases=['dc'])
-    async def voice_disconnect(self, ctx: commands.Context):
+    async def voice_disconnect(self, ctx: inspector.Context):
         """Disconnects from the voice channel in this guild, if there is one."""
 
         voice = ctx.guild.voice_client
@@ -444,7 +444,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
 
     @voice.command(name='stop')
     @commands.check(playing_check)
-    async def voice_stop(self, ctx: commands.Context):
+    async def voice_stop(self, ctx: inspector.Context):
         """Stops running an audio source, if there is one."""
 
         voice = ctx.guild.voice_client
@@ -453,7 +453,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
 
     @voice.command(name='pause')
     @commands.check(playing_check)
-    async def voice_pause(self, ctx: commands.Context):
+    async def voice_pause(self, ctx: inspector.Context):
         """Pauses a running audio source, if there is one."""
 
         voice = ctx.guild.voice_client
@@ -465,7 +465,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
 
     @voice.command(name='resume')
     @commands.check(playing_check)
-    async def voice_resume(self, ctx: commands.Context):
+    async def voice_resume(self, ctx: inspector.Context):
         """Pauses a running audio source, if there is one."""
 
         voice = ctx.guild.voice_client
@@ -477,7 +477,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
 
     @voice.command(name='volume')
     @commands.check(playing_check)
-    async def voice_volume(self, ctx: commands.Context, *, percentage: float):
+    async def voice_volume(self, ctx: inspector.Context, *, percentage: float):
         """Adjusts the volume of an audio source if it is supported."""
 
         volume = max(0.0, min(1.0, percentage / 100))
@@ -492,7 +492,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
 
     @voice.command(name='play')
     @commands.check(connected_check)
-    async def voice_play(self, ctx: commands.Context, *, uri: str):
+    async def voice_play(self, ctx: inspector.Context, *, uri: str):
         """Plays audio direct from a URI.
 
         Can be either a local file or an audio resource from the internet.
@@ -510,7 +510,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
 
     @voice.command(name='youtube_dl', aliases=['youtubedl', 'ytdl', 'yt'])
     @commands.check(connected_check)
-    async def voice_youtube_dl(self, ctx: commands.Context, *, url: str):
+    async def voice_youtube_dl(self, ctx: inspector.Context, *, url: str):
         """Plays audio from youtube_dl-compatible sources."""
 
         if not youtube_dl:
@@ -527,7 +527,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
         await ctx.send(f'Playing in {voice.channel.name}.')
 
     @inspector.command()
-    async def su(self, ctx: commands.Context, member: typing.Union[discord.Member, discord.User], *, command: str):
+    async def su(self, ctx: inspector.Context, member: typing.Union[discord.Member, discord.User], *, command: str):
         """Run a command as someone else.
 
         This will try to resolve to a Member, but will use a User if it can't find one.
@@ -540,7 +540,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
         return await alt_ctx.command.invoke(alt_ctx)
 
     @inspector.command()
-    async def sudo(self, ctx: commands.Context, *, command: str):
+    async def sudo(self, ctx: inspector.Context, *, command: str):
         """Runs a command bypassing all checks and cooldowns.
 
         This also bypasses permission checks so this has a high possibility of making a command raise.
@@ -553,7 +553,7 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
         return await alt_ctx.command.reinvoke(alt_ctx)
 
     @inspector.command()
-    async def debug(self, ctx: commands.Context, *, command: str):
+    async def debug(self, ctx: inspector.Context, *, command: str):
         """Run a command timing execution and catching exceptions."""
 
         alt_ctx = await copy_context_with(ctx, content=ctx.prefix + command)
@@ -569,14 +569,14 @@ class Owner(metaclass=inspector.MetaCog, category='Owner'):
         await ctx.send(f'Command `{alt_ctx.command.qualified_name}` finished in {end - start:.3f}s.')
 
     @inspector.command(aliases=['logout'])
-    async def shutdown(self, ctx: commands.Context):
+    async def shutdown(self, ctx: inspector.Context):
         """Logs this bot out."""
 
         await ctx.send('Logging out now...')
         await ctx.bot.logout()
 
     @inspector.command()
-    async def leave(self, ctx: commands.Context, *, server: Guild):
+    async def leave(self, ctx: inspector.Context, *, server: Guild):
         """Leaves a server.
 
         Defaults to the server the command is invoked in.
