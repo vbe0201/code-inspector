@@ -24,6 +24,7 @@ python-dateutil==2.7.5
 uvloop==0.12.0
 
 # Some useful general utilities a few commands require.
+aiodns==1.2.0
 humanize==0.5.1
 import_expression<1.0.0,>=0.3.7
 more-itertools==5.0.0

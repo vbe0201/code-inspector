@@ -7,6 +7,7 @@ import inspect
 import logging
 import os
 import pkgutil
+import socket
 import sys
 from datetime import datetime
 
@@ -73,7 +74,10 @@ class CodeInspector(commands.AutoShardedBot):
         self.owners = config['owners']
 
         self.command_counter = collections.Counter()
-        self.session = aiohttp.ClientSession(loop=self.loop)
+        self.session = aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver(), family=socket.AF_INET),
+            loop=self.loop
+        )
         self.start_time = datetime.utcnow()
         self.pool = self.loop.run_until_complete(db.create_pool(config['pg_credentials']))
         self.process = psutil.Process(os.getpid())
