@@ -1,7 +1,6 @@
 import calendar
 import collections
 import datetime
-import functools
 import random
 import re
 
@@ -84,10 +83,6 @@ class Delta(collections.namedtuple('Delta', 'delta')):
         attrs = ['years', 'months', 'days', 'hours', 'minutes', 'seconds']
         return sum(getattr(self.delta, attr, 0) * DURATION_MULTIPLIERS[attr] for attr in attrs)
 
-    @staticmethod
-    def random_example(ctx):
-        return _random_short_time()
-
 
 # Time
 
@@ -135,18 +130,6 @@ def _random_datetime(start=_START_TIMEDELTA, end=None):
     return datetime.datetime.utcfromtimestamp(ts)
 
 
-def _random_datetime_example(start=_START_TIMEDELTA, end=None):
-    now = datetime.datetime.utcnow()
-    dt = _random_datetime(start=start, end=end)
-
-    if now.date() == dt.date():
-        choices = _strftime_time_formats  # we don't need the date here
-    else:
-        choices = _strftime_date_formats
-
-    return dt.strftime(random.choice(choices))
-
-
 class HumanTime(_TimeBase):
     __slots__ = ()
 
@@ -168,10 +151,6 @@ class HumanTime(_TimeBase):
 
         return super().__new__(cls, dt)
 
-    @staticmethod
-    def random_example(ctx):
-        return _random_datetime_example()
-
 
 class Time(HumanTime):
     __slots__ = ()
@@ -185,17 +164,6 @@ class Time(HumanTime):
             now = datetime.datetime.utcnow()
             return _TimeBase.__new__(cls, now + delta.delta)
 
-    @staticmethod
-    def random_example(ctx):
-        return random.choice([Delta, HumanTime]).random_example(ctx)
-
-
-_future_datetime_example = functools.partial(
-    _random_datetime_example,
-    start=datetime.timedelta(seconds=10),
-    end=datetime.timedelta(days=30)
-)
-
 
 class FutureTime(Time):
     __slots__ = ()
@@ -208,12 +176,6 @@ class FutureTime(Time):
             raise commands.BadArgument('This time is in the past.')
 
         return self
-
-    @staticmethod
-    def random_example(ctx):
-        if random.random() > 0.5:
-            return Delta.random_example(ctx)
-        return _future_datetime_example()
 
 
 # Parsing
