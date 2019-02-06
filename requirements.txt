@@ -18,7 +18,7 @@ PyYAML==3.13
 
 # Some utilities for processing date and time.
 parsedatetime==2.4
-python-dateutil==2.7.5
+python-dateutil==2.8.0
 
 # To speed up the asyncio event loop.
 uvloop==0.12.0
