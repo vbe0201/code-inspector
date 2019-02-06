@@ -3,6 +3,7 @@
 [![CircleCI](https://circleci.com/gh/itsVale/code-inspector/tree/master.svg?style=svg)](https://circleci.com/gh/itsVale/code-inspector/tree/master)
 [![Build Status](https://travis-ci.com/itsVale/code-inspector.svg?branch=master)](https://travis-ci.com/itsVale/code-inspector)
 [![Updates](https://pyup.io/repos/github/itsVale/code-inspector/shield.svg)](https://pyup.io/repos/github/itsVale/code-inspector/)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/16d1c459f9474dd1959b92aa1afad82e)](https://www.codacy.com/app/itsVale/code-inspector?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=itsVale/code-inspector&amp;utm_campaign=Badge_Grade)
 
 Code Inspector is a bot that mainly provides tools intended to support programming
 servers on [Discord](https://discordapp.com).
