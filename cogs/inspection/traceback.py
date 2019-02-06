@@ -5,6 +5,7 @@ import importlib
 import re
 
 import discord
+from discord.ext import commands
 
 from . import get_source_revision
 from .source_resolver import SourceResolver
@@ -18,7 +19,7 @@ _EXCLAMATION_ICON = 'https://twemoji.maxcdn.com/2/72x72/2757.png'
 class TracebackInspection(metaclass=inspector.MetaCog, category='Inspection'):
     _TRACEBACK_REGEX = re.compile(r"(?:Traceback.*)*[\n\s]+(?:File\s\"(.*)\",\sline\s(\d+)(?:,\sin\s.*)?)[\n\s]+(.*)")
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.source_resolver = SourceResolver()
         self.source_revision = None
