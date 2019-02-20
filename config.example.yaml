@@ -1,12 +1,13 @@
-# The bot token
+# The bot token.
 token: 'Token'
-# The prefix of the bot
+# The prefix of the bot.
 prefix: 'cc!'
-# A brief description about the bot.
+# A brief description of the bot.
 description: "Hello! My name is Code Inspector and I'm here to help you with your code!"
 # A Webhook URL to send command errors to.
 webhook_url: ""
 
+# Your PostgreSQL credentails for establishing a connection to a database.
 pg_credentials:
   host: 127.0.0.1
   port: 5432
@@ -15,7 +16,7 @@ pg_credentials:
   password: 'super secret password'
   timeout: 60
 
-# IDs of users that should have access to the commands of the owner cogs
+# IDs of users that should have access to the commands of the owner cogs.
 owners:
   - 12345
   - 23456
