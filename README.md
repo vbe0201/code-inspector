@@ -1,11 +1,11 @@
 # Code Inspector
 
-[![CircleCI](https://circleci.com/gh/itsVale/code-inspector/tree/master.svg?style=svg)](https://circleci.com/gh/itsVale/code-inspector/tree/master)
-[![Build Status](https://travis-ci.com/itsVale/code-inspector.svg?branch=master)](https://travis-ci.com/itsVale/code-inspector)
-[![Updates](https://pyup.io/repos/github/itsVale/code-inspector/shield.svg)](https://pyup.io/repos/github/itsVale/code-inspector/)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/16d1c459f9474dd1959b92aa1afad82e)](https://www.codacy.com/app/itsVale/code-inspector?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=itsVale/code-inspector&amp;utm_campaign=Badge_Grade)
-[![CodeFactor](https://www.codefactor.io/repository/github/itsvale/code-inspector/badge)](https://www.codefactor.io/repository/github/itsvale/code-inspector)
-[![Maintainability](https://api.codeclimate.com/v1/badges/016834a069c284533df9/maintainability)](https://codeclimate.com/github/itsVale/code-inspector/maintainability)
+[![CircleCI](https://circleci.com/gh/vbe0201/code-inspector/tree/master.svg?style=svg)](https://circleci.com/gh/itsVale/code-inspector/tree/master)
+[![Build Status](https://travis-ci.com/vbe0201/code-inspector.svg?branch=master)](https://travis-ci.com/itsVale/code-inspector)
+[![Updates](https://pyup.io/repos/github/vbe0201/code-inspector/shield.svg)](https://pyup.io/repos/github/itsVale/code-inspector/)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/16d1c459f9474dd1959b92aa1afad82e)](https://www.codacy.com/app/vbe0201/code-inspector?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=vbe0201/code-inspector&amp;utm_campaign=Badge_Grade)
+[![CodeFactor](https://www.codefactor.io/repository/github/vbe0201/code-inspector/badge)](https://www.codefactor.io/repository/github/vbe0201/code-inspector)
+[![Maintainability](https://api.codeclimate.com/v1/badges/016834a069c284533df9/maintainability)](https://codeclimate.com/github/vbe0201/code-inspector/maintainability)
 
 Code Inspector is a bot that mainly provides tools intended to support programming
 servers on [Discord](https://discordapp.com).
