@@ -178,7 +178,7 @@ The last step is to install the bot dependencies.
 
 First of all, create a venv for them:
 ```bash
-python -m virtualenv venv
+python -m venv venv
 
 # On Windows:
 "venv\Scripts\activate.bat"
