@@ -29,4 +29,4 @@ humanize==0.5.1
 import_expression<1.0.0,>=0.3.7
 more-itertools==7.0.0
 lxml==4.3.3
-pillow==5.4.1
+pillow==6.0.0
