@@ -8,7 +8,7 @@ click==7.0
 git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py[voice]
 
 # youtube-dl for extended voice functionality.
-youtube-dl==2019.2.18
+youtube-dl==2019.4.7
 
 # For monitoring processes of the bot.
 psutil==5.5.1
