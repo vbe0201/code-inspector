@@ -21,7 +21,7 @@ parsedatetime==2.4
 python-dateutil==2.8.0
 
 # To speed up the asyncio event loop.
-uvloop==0.12.1
+uvloop==0.12.2
 
 # Some useful general utilities a few commands require.
 aiodns==1.2.0
