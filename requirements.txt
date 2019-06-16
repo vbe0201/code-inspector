@@ -14,7 +14,7 @@ youtube-dl==2019.6.8
 psutil==5.6.3
 
 # For parsing the config file.
-PyYAML==5.1
+PyYAML==5.1.1
 
 # Some utilities for processing date and time.
 parsedatetime==2.4
